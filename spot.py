@@ -1,10 +1,15 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import google.generativeai as genai
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Spotify API credentials
-SPOTIFY_CLIENT_ID = "b2c1025384f44f4ba1f10c5174c04d82"
-SPOTIFY_CLIENT_SECRET = "25ce3df8a1dd4fb8a463780b78ab707c"
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
 sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIFY_CLIENT_ID,
                                                            client_secret=SPOTIFY_CLIENT_SECRET))
@@ -29,8 +34,8 @@ def suggest_dynamic_music(concern_level):
     return search_playlist(mood_query)
 
 # Gemini setup
-api_key = "AIzaSyDhxzDqQ6pXg4hJm0OajFz72JpaRI_vYHc"
-genai.configure(api_key=api_key)
+gemini_api_key = os.getenv("GENAI_API_KEY")
+genai.configure(api_key=gemini_api_key)
 model = genai.GenerativeModel('models/gemini-1.5-pro-latest')
 
 system_prompt = """
