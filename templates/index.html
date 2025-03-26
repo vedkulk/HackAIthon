@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Post Analyzer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f4f4f4;
+            border-radius: 8px;
+            box-shadow: 0 0 10px #ccc;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        canvas {
+            width: 100% !important;
+            max-width: 800px;
+            margin: 20px auto;
+            display: block;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+        }
+        @media (max-width: 768px) {
+            form {
+                width: 95%;
+                padding: 15px;
+            }
+            textarea {
+                height: 80px;
+            }
+            button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Social Media Post Analyzer</h1>
+
+<form id="analyze-form">
+    <label>Post 1:</label>
+    <textarea id="post1" placeholder="Enter social media post 1"></textarea>
+
+    <label>Post 2:</label>
+    <textarea id="post2" placeholder="Enter social media post 2"></textarea>
+
+    <label>Post 3:</label>
+    <textarea id="post3" placeholder="Enter social media post 3"></textarea>
+
+    <label>Post 4:</label>
+    <textarea id="post4" placeholder="Enter social media post 4"></textarea>
+
+    <label>Post 5:</label>
+    <textarea id="post5" placeholder="Enter social media post 5"></textarea>
+
+    <button type="submit">Analyze</button>
+</form>
+
+<div id="error-message" class="error" style="display: none;"></div>
+
+<canvas id="timelineChart"></canvas>
+
+<script>
+    let chart;  // Global variable for the chart
+
+    document.getElementById('analyze-form').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const paragraphs = [
+            document.getElementById('post1').value.trim(),
+            document.getElementById('post2').value.trim(),
+            document.getElementById('post3').value.trim(),
+            document.getElementById('post4').value.trim(),
+            document.getElementById('post5').value.trim()
+        ].filter(p => p);  // Filter out empty paragraphs
+
+        const errorMessage = document.getElementById('error-message');
+
+        if (paragraphs.length === 0) {
+            errorMessage.textContent = "Please enter at least one post.";
+            errorMessage.style.display = 'block';
+            return;
+        }
+
+        try {
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paragraphs })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            const timelineData = await response.json();
+
+            if (!Array.isArray(timelineData) || timelineData.length === 0) {
+                throw new Error('Invalid response format. Please try again.');
+            }
+
+            errorMessage.style.display = 'none';  // Hide error message on success
+
+            // Destroy previous chart instance if it exists
+            if (chart) {
+                chart.destroy();
+            }
+
+            // Prepare the chart labels and data
+            const labels = timelineData.map((_, index) => `Post ${index + 1}`);
+            const scores = timelineData.map(item => item.emotion_score);
+
+            // ✅ Calculate dynamic y-axis range
+            const minScore = Math.min(...scores);
+            const maxScore = Math.max(...scores);
+            const yMin = minScore < -1.0 ? minScore : -1.0;
+            const yMax = maxScore > 1.0 ? maxScore : 1.0;
+
+            // Plot the chart
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Aggregate Emotion Score',
+                        data: scores,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            suggestedMin: yMin,   // Dynamic scaling
+                            suggestedMax: yMax,
+                            title: { display: true, text: 'Sentiment Score' }
+                        },
+                        x: { title: { display: true, text: 'Social Media Posts' } }
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
+            errorMessage.textContent = `Error: ${error.message}`;
+            errorMessage.style.display = 'block';
+        }
+    });
+</script>
+
+</body>
+</html>
