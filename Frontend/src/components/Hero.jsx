@@ -16,10 +16,10 @@ export default function Hero() {
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-indigo-900 mb-4">
-            Teenage Suicide Awareness
+            Neura Haven
           </h1>
           <p className="text-xl text-indigo-700 max-w-3xl mx-auto">
-            Recognizing the signs, providing support, and taking action to prevent teenage suicide
+          A safe space for your thoughts.
           </p>
         </div>
 
@@ -34,14 +34,14 @@ export default function Hero() {
             color="bg-indigo-50 border-indigo-200 hover:bg-indigo-100"
           />
           <FeatureCard
-            title="Support Chat"
+            title="Neura"
             description="Talk with our empathetic chatbot for guidance, resources, and music recommendations."
             icon={<LucideMessageCircle className="h-10 w-10 text-purple-600" />}
             href="/chat"
             color="bg-purple-50 border-purple-200 hover:bg-purple-100"
           />
           <FeatureCard
-            title="Thought Journal"
+            title="Lexora - Self Thought Journal"
             description="Express thoughts freely in a safe space and receive thoughtful analysis and support."
             icon={<LucideHeart className="h-10 w-10 text-pink-600" />}
             href="/thought-analysis"
